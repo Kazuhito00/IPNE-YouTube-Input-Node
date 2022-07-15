@@ -1,24 +1,23 @@
-
+[[Japanese](https://github.com/Kazuhito00/IPNE-YouTube-Input-Node)/English] 
 
 > **Warning** <br>
-> IPNE-YouTube-Input-Node は [Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor) の追加用ノードです。<br>
-> このリポジトリ単体では動作しません。
+> IPNE-YouTube-Input-Node is an additional node for [Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor). <br>
+> This repository alone does not work.
 
 # IPNE-YouTube-Input-Node
-[Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor) で動作するYouTube入力用ノードです。
+It is a node for YouTube input that works with [Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor).
 
 https://user-images.githubusercontent.com/37477845/179127642-0cb68f07-3a64-43e0-a870-563bdd8c2034.mp4
 
 # Requirement
-[Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor) の依存パッケージに加えて、以下のパッケージのインストールが必要です。
+In addition to the dependent packages of [Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor), the following packages need to be installed.
 ```
 pip install youtube_dl
 pip install git+https://github.com/Kazuhito00/pafy
 ```
 
 # Installation
-「node/input_node/node_youtube_input.py」を <br>
-[Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor) の 「[node/input_node](https://github.com/Kazuhito00/Image-Processing-Node-Editor/tree/main/node/input_node)」にコピーしてください。
+Copy "node/input_node/node_youtube_input.py" to "[node/input_node](https://github.com/Kazuhito00/Image-Processing-Node-Editor/tree/main/node/input_node)" of [Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor).
 
 # Node
 <details open>
@@ -33,9 +32,9 @@ pip install git+https://github.com/Kazuhito00/pafy
             <img src="https://user-images.githubusercontent.com/37477845/179128561-d4e23896-98fd-4439-8489-223c92976899.png" loading="lazy" width="300px">
         </td>
         <td width="760">
-            YouTubeを読み込み、画像を出力するノード<br>
-            URL欄にYouTube動画のURLを指定して「Start」ボタンを押してください。<br>
-            再生が始まるまでに少々時間がかかります
+            Node that reads YouTube and outputs images<br>
+            Please specify the URL of the YouTube video in the URL field and press the "Start" button<br>
+            It will take some time before playback starts
         </td>
     </tr>
 </table>
@@ -43,7 +42,7 @@ pip install git+https://github.com/Kazuhito00/pafy
 </details>
 
 # Author
-高橋かずひと(https://twitter.com/KzhtTkhs)
+Kazuhito Takahashi(https://twitter.com/KzhtTkhs)
  
 # License 
 Image-Processing-Node-Editor is under [Apache-2.0 license](LICENSE).<br><br>
