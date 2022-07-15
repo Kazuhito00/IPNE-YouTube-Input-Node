@@ -12,7 +12,7 @@ https://user-images.githubusercontent.com/37477845/179127642-0cb68f07-3a64-43e0-
 # Requirement
 [Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor) の依存パッケージに加えて、以下のパッケージのインストールが必要です。
 ```
-pip install youtube_dl
+pip install -U yt-dlp
 pip install git+https://github.com/Kazuhito00/pafy
 ```
 
