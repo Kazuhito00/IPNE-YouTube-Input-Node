@@ -12,6 +12,55 @@ from node_editor.util import dpg_get_value, dpg_set_value
 from node.node_abc import DpgNodeABC
 from node_editor.util import convert_cv_to_dpg
 
+import threading
+from threading import Lock
+
+
+class YoutubeCapture(object):
+    _frame = None
+    _ret = None
+
+    _lock = Lock()
+
+    _video_capture = None
+    _wait_interval = 5  # ms
+    _prev_read_time = 0
+
+    def __init__(self, rtsp_link):
+        self._video_capture = cv2.VideoCapture(rtsp_link)
+
+        thread = threading.Thread(
+            target=self._youtube_read_thread,
+            args=(self._video_capture, ),
+            name="youtube_read_thread",
+        )
+
+        thread.daemon = True
+        thread.start()
+
+    def _youtube_read_thread(self, video_capture):
+        while True:
+            with self._lock:
+                current_time = time.perf_counter()
+                interval_time = current_time - self._prev_read_time
+                interval_time = int(interval_time * 1000)
+                if interval_time > self._wait_interval:
+                    self._ret, self._frame = video_capture.read()
+                    self._prev_read_time = current_time
+
+    def read(self):
+        if (self._ret is not None) and (self._frame is not None):
+            return self._ret, self._frame.copy()
+        else:
+            return self._ret, None
+
+    def release(self):
+        if self.capture is not None:
+            self.capture.release()
+
+    def set_interval(self, interval_time):
+        self._wait_interval = interval_time
+
 
 class Node(DpgNodeABC):
     _ver = '0.0.1'
@@ -24,7 +73,8 @@ class Node(DpgNodeABC):
     _stop_label = 'Stop'
     _loading_label = 'Loading...'
 
-    _wait_interval = 50  # ms
+    _min_val = 1
+    _max_val = 200
 
     _youtube_capture = {}
     _prev_read_time = {}
@@ -44,6 +94,8 @@ class Node(DpgNodeABC):
         tag_node_name = str(node_id) + ':' + self.node_tag
         tag_node_input01_name = tag_node_name + ':' + self.TYPE_TEXT + ':Input01'
         tag_node_input01_value_name = tag_node_name + ':' + self.TYPE_TEXT + ':Input01Value'
+        tag_node_input02_name = tag_node_name + ':' + self.TYPE_INT + ':Input02'
+        tag_node_input02_value_name = tag_node_name + ':' + self.TYPE_INT + ':Input02Value'
         tag_node_output01_name = tag_node_name + ':' + self.TYPE_IMAGE + ':Output01'
         tag_node_output01_value_name = tag_node_name + ':' + self.TYPE_IMAGE + ':Output01Value'
         tag_node_output02_name = tag_node_name + ':' + self.TYPE_TIME_MS + ':Output02'
@@ -99,6 +151,20 @@ class Node(DpgNodeABC):
                     attribute_type=dpg.mvNode_Attr_Output,
             ):
                 dpg.add_image(tag_node_output01_value_name)
+            # 読み込み間隔(ms)
+            with dpg.node_attribute(
+                    tag=tag_node_input02_name,
+                    attribute_type=dpg.mvNode_Attr_Input,
+            ):
+                dpg.add_slider_int(
+                    tag=tag_node_input02_value_name,
+                    label="Interval(ms)",
+                    width=small_window_w - 110,
+                    default_value=33,
+                    min_value=self._min_val,
+                    max_value=self._max_val,
+                    callback=None,
+                )
             # 録画/再生追加ボタン
             with dpg.node_attribute(
                     tag=tag_node_button_name,
@@ -133,6 +199,7 @@ class Node(DpgNodeABC):
     ):
         tag_node_name = str(node_id) + ':' + self.node_tag
         input_value01_tag = tag_node_name + ':' + self.TYPE_TEXT + ':Input01Value'
+        input_value02_tag = tag_node_name + ':' + self.TYPE_INT + ':Input02Value'
         output_value01_tag = tag_node_name + ':' + self.TYPE_IMAGE + ':Output01Value'
         output_value02_tag = tag_node_name + ':' + self.TYPE_TIME_MS + ':Output02Value'
 
@@ -140,8 +207,23 @@ class Node(DpgNodeABC):
         small_window_h = self._opencv_setting_dict['input_window_height']
         use_pref_counter = self._opencv_setting_dict['use_pref_counter']
 
+        # 接続情報確認
+        for connection_info in connection_list:
+            connection_type = connection_info[0].split(':')[2]
+            if connection_type == self.TYPE_INT:
+                # 接続タグ取得
+                source_tag = connection_info[0] + 'Value'
+                destination_tag = connection_info[1] + 'Value'
+                # 値更新
+                input_value = int(dpg_get_value(source_tag))
+                input_value = max([self._min_val, input_value])
+                input_value = min([self._max_val, input_value])
+                dpg_set_value(destination_tag, input_value)
+
         # YouTube URL取得
         youtube_url = dpg_get_value(input_value01_tag)
+        # Interval time取得
+        wait_interval = dpg_get_value(input_value02_tag)
 
         # VideoCapture()インスタンス取得
         youtube_capture = None
@@ -161,10 +243,8 @@ class Node(DpgNodeABC):
             if youtube_url not in self._prev_read_time:
                 ret, frame = youtube_capture.read()
             else:
-                interval_time = start_time - self._prev_read_time[youtube_url]
-                interval_time = int(interval_time * 1000)
-                if interval_time > self._wait_interval:
-                    ret, frame = youtube_capture.read()
+                youtube_capture.set_interval(wait_interval)
+                ret, frame = youtube_capture.read()
 
             if not ret:
                 return None, None
@@ -195,24 +275,30 @@ class Node(DpgNodeABC):
     def get_setting_dict(self, node_id):
         tag_node_name = str(node_id) + ':' + self.node_tag
         tag_node_input01_value_name = tag_node_name + ':' + self.TYPE_TEXT + ':Input01Value'
+        tag_node_input02_value_name = tag_node_name + ':' + self.TYPE_INT + ':Input02Value'
 
         pos = dpg.get_item_pos(tag_node_name)
         youtube_url = dpg_get_value(tag_node_input01_value_name)
+        interval_time = dpg_get_value(tag_node_input02_value_name)
 
         setting_dict = {}
         setting_dict['ver'] = self._ver
         setting_dict['pos'] = pos
         setting_dict[tag_node_input01_value_name] = youtube_url
+        setting_dict[tag_node_input02_value_name] = interval_time
 
         return setting_dict
 
     def set_setting_dict(self, node_id, setting_dict):
         tag_node_name = str(node_id) + ':' + self.node_tag
         tag_node_input01_value_name = tag_node_name + ':' + self.TYPE_TEXT + ':Input01Value'
+        tag_node_input02_value_name = tag_node_name + ':' + self.TYPE_INT + ':Input02Value'
 
         youtube_url = setting_dict[tag_node_input01_value_name]
+        interval_time = setting_dict[tag_node_input02_value_name]
 
         dpg_set_value(tag_node_input01_value_name, youtube_url)
+        dpg_set_value(tag_node_input02_value_name, interval_time)
 
     def _button(self, sender, data, user_data):
         tag_node_name = user_data
@@ -232,7 +318,7 @@ class Node(DpgNodeABC):
 
                     pafy_video = pafy.new(youtube_url)
                     pafy_best_video = pafy_video.getbest(preftype="mp4")
-                    youtube_capture = cv2.VideoCapture(pafy_best_video.url)
+                    youtube_capture = YoutubeCapture(pafy_best_video.url)
                     self._youtube_capture[youtube_url] = youtube_capture
 
                     dpg.set_item_label(tag_node_button_value_name,
