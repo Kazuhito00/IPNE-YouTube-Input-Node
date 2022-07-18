@@ -55,8 +55,8 @@ class YoutubeCapture(object):
             return self._ret, None
 
     def release(self):
-        if self.capture is not None:
-            self.capture.release()
+        if self._video_capture is not None:
+            self._video_capture.release()
 
     def set_interval(self, interval_time):
         self._wait_interval = interval_time
