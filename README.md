@@ -47,4 +47,4 @@ pip install git+https://github.com/Kazuhito00/pafy
 高橋かずひと(https://twitter.com/KzhtTkhs)
  
 # License 
-Image-Processing-Node-Editor is under [Apache-2.0 license](LICENSE).<br><br>
+IPNE-YouTube-Input-Node is under [Apache-2.0 license](LICENSE).<br><br>
