@@ -1,6 +1,6 @@
 [Japanese/[English](README_EN.md)]
 
-> **Warning** <br>
+> [!WARNING]
 > IPNE-YouTube-Input-Node は [Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor) の追加用ノードです。<br>
 > このリポジトリ単体では動作しません。
 
