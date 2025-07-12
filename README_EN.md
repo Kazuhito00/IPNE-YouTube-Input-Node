@@ -1,6 +1,6 @@
 [[Japanese](https://github.com/Kazuhito00/IPNE-YouTube-Input-Node)/English] 
 
-> **Warning** <br>
+> [!WARNING]
 > IPNE-YouTube-Input-Node is an additional node for [Image-Processing-Node-Editor](https://github.com/Kazuhito00/Image-Processing-Node-Editor). <br>
 > This repository alone does not work.
 
