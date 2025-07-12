@@ -46,4 +46,4 @@ Copy "node/input_node/node_youtube_input.py" to "[node/input_node](https://githu
 Kazuhito Takahashi(https://twitter.com/KzhtTkhs)
  
 # License 
-Image-Processing-Node-Editor is under [Apache-2.0 license](LICENSE).<br><br>
+IPNE-YouTube-Input-Node is under [Apache-2.0 license](LICENSE).<br><br>
